@@ -8,16 +8,28 @@ import (
 	"path/filepath"
 )
 
-var oldFile = flag.String("i", "", "old file")
-var newFile = flag.String("o", "", "new file")
+func main() {
+	flag.Parse()
+	tail := flag.Args()
+	for i := 0; i < len(tail)-1; i++ {
+		moveFile(tail[i], tail[len(tail)-1])
+	}
+}
 
 func moveFile(oldFile, newFile string) {
 	if oldFile == "" || newFile == "" {
 		return
 	}
+
+	info, statErr := os.Stat(oldFile)
+	if statErr != nil {
+		log.Fatal(statErr)
+	}
+
+	fmt.Println("ya yeet")
 	oldFile, pathErr := filepath.Abs(oldFile)
 	if pathErr != nil {
-		fmt.Println("Error finding file %s", pathErr)
+		log.Fatal(pathErr)
 	}
 	newFile, pathErr = filepath.Abs(newFile)
 
@@ -25,14 +37,4 @@ func moveFile(oldFile, newFile string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-}
-
-func main() {
-	flag.Parse()
-
-	fmt.Println(*oldFile)
-	fmt.Println(*newFile)
-
-	moveFile(*oldFile, *newFile)
 }
