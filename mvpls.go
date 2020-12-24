@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 )
 
@@ -21,18 +22,30 @@ func moveFile(oldFile, newFile string) {
 		return
 	}
 
-	info, statErr := os.Stat(oldFile)
-	if statErr != nil {
-		log.Fatal(statErr)
-	}
-
-	fmt.Println("ya yeet")
 	oldFile, pathErr := filepath.Abs(oldFile)
 	if pathErr != nil {
 		log.Fatal(pathErr)
 	}
+
 	newFile, pathErr = filepath.Abs(newFile)
 
+	info, statErr := os.Stat(newFile)
+	if statErr != nil {
+		log.Fatal(statErr)
+	}
+	fmt.Println(info)
+	if info.IsDir() {
+		fmt.Println("NEW FILE IS DIR")
+		info, statErr := os.Stat(oldFile)
+		newFile = path.Join(newFile, "/"+info.Name())
+		if statErr != nil {
+			log.Fatal(statErr)
+		}
+
+	}
+
+	fmt.Println(newFile)
+	fmt.Println(oldFile)
 	err := os.Rename(oldFile, newFile)
 	if err != nil {
 		log.Fatal(err)
