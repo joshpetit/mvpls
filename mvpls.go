@@ -30,22 +30,14 @@ func moveFile(oldFile, newFile string) {
 	newFile, pathErr = filepath.Abs(newFile)
 
 	info, statErr := os.Stat(newFile)
-	if statErr != nil {
-		log.Fatal(statErr)
-	}
-	fmt.Println(info)
-	if info.IsDir() {
-		fmt.Println("NEW FILE IS DIR")
-		info, statErr := os.Stat(oldFile)
+	fmt.Println(statErr)
+	if (statErr == nil || os.IsExist(statErr)) && info.IsDir() {
+		info, _ := os.Stat(oldFile)
 		newFile = path.Join(newFile, "/"+info.Name())
-		if statErr != nil {
-			log.Fatal(statErr)
-		}
-
 	}
 
-	fmt.Println(newFile)
 	fmt.Println(oldFile)
+	fmt.Println(newFile)
 	err := os.Rename(oldFile, newFile)
 	if err != nil {
 		log.Fatal(err)
