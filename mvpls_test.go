@@ -5,6 +5,7 @@ import (
 	"testing"
 )
 
+//REFACTOR: Move all test dirs to default temp directory
 func TestMoveFile(t *testing.T) {
 	createTestFile("testFile", t)
 
@@ -27,6 +28,8 @@ func TestMoveFile(t *testing.T) {
 	if _, err := os.Stat("testingDir/beforeDirMove"); err != nil && os.IsNotExist(err) {
 		t.Error("file not moved to directory")
 	}
+	os.Remove("testingDir/beforeDirMove")
+
 	createTestFile("fullMove", t)
 	MoveFile("fullMove", "testingDir/")
 
@@ -34,7 +37,7 @@ func TestMoveFile(t *testing.T) {
 		t.Error("file not moved to directory")
 	}
 
-	os.Remove("testingDir/afterMove")
+	os.Remove("testingDir/fullMove")
 	os.Remove("testingDir")
 }
 
@@ -47,7 +50,7 @@ func createTestFile(file string, t *testing.T) {
 	}
 
 	if err != nil {
-		t.Error("Error creating {}", file)
+		t.Error("Error creating", file)
 	}
 
 }
