@@ -27,10 +27,11 @@ func (s stack) Pop() (stack, string) {
 
 var regexFlag = flag.String("r", "regex", "The regex to be used to match files")
 
-func main() {
-	s := make(stack, 0)
-	flag.Parse()
+var s stack
 
+func main() {
+	s = make(stack, 0)
+	flag.Parse()
 	reg, comp_err := regexp.Compile(*regexFlag)
 
 	if comp_err != nil {
@@ -39,11 +40,11 @@ func main() {
 	}
 
 	tail := flag.Args()
-	targetDir := tail[len(tail)-1]
+	target := tail[len(tail)-1]
 
 	if *regexFlag == "" {
 		for i := 0; i < len(tail)-1; i++ {
-			MoveFile(tail[i], targetDir)
+			MoveFile(tail[i], target)
 		}
 		return
 	}
@@ -53,12 +54,21 @@ func main() {
 		log.Fatal(err)
 	}
 
-	goDir, _ := filepath.Abs(tail[len(tail)-2])
-	s = s.Push(goDir)
-	var dir string
+	for i := 0; i < len(tail)-1; i++ {
+		ProbeDirectory(tail[i], target, reg)
+	}
+}
+
+func ProbeDirectory(dir, target string, reg *regexp.Regexp) {
+	if dir == "" || target == "" {
+		return
+	}
+	dir, _ = filepath.Abs(dir)
+	target, _ = filepath.Abs(target)
+	s = s.Push(dir)
 	for len(s) != 0 {
 		s, dir = s.Pop()
-		err = filepath.Walk(dir,
+		err := filepath.Walk(dir,
 			func(path string, info os.FileInfo, err error) error {
 				if err != nil {
 					return err
@@ -71,14 +81,18 @@ func main() {
 						s = s.Push(path)
 					} else if reg.MatchString(info.Name()) {
 						fmt.Println(info.Name(), "attempting move")
-						MoveFile(path, targetDir)
+						MoveFile(path, target)
 					}
 				}
 
 				return nil
 			})
+		if err != nil {
+			log.Fatal(err)
+		}
 		s, dir = s.Pop()
 	}
+
 }
 
 func MoveFile(oldFile, newFile string) {
