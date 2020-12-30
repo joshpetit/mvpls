@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 )
 
 type stack []string
@@ -24,18 +25,36 @@ func (s stack) Pop() (stack, string) {
 	return s[:l-1], s[l-1]
 }
 
+var regexFlag = flag.String("r", "regex", "The regex to be used to match files")
+
 func main() {
 	s := make(stack, 0)
 	flag.Parse()
-	tail := flag.Args()
-	for i := 0; i < len(tail)-1; i++ {
-		MoveFile(tail[i], tail[len(tail)-1])
+
+	reg, comp_err := regexp.Compile(*regexFlag)
+
+	if comp_err != nil {
+		log.Fatal(comp_err)
+		return
 	}
+
+	tail := flag.Args()
+	targetDir := tail[len(tail)-1]
+
+	if *regexFlag == "" {
+		for i := 0; i < len(tail)-1; i++ {
+			MoveFile(tail[i], targetDir)
+		}
+		return
+	}
+
 	_, err := ioutil.ReadDir(".")
 	if err != nil {
 		log.Fatal(err)
 	}
-	s = s.Push("testdir")
+
+	goDir, _ := filepath.Abs(tail[len(tail)-2])
+	s = s.Push(goDir)
 	var dir string
 	for len(s) != 0 {
 		s, dir = s.Pop()
@@ -44,15 +63,20 @@ func main() {
 				if err != nil {
 					return err
 				}
-				if info.IsDir() && info.Name() != dir {
-					fmt.Println(info.Name())
-					s = s.Push(path)
-				} else if info.Name() != dir {
-					fmt.Println(info.Name())
+				fmt.Println(info.Name())
+
+				if path != dir {
+					if info.IsDir() {
+						fmt.Println(info.Name(), "added to stack")
+						s = s.Push(path)
+					} else if reg.MatchString(info.Name()) {
+						fmt.Println(info.Name(), "attempting move")
+						MoveFile(path, targetDir)
+					}
 				}
+
 				return nil
 			})
-
 		s, dir = s.Pop()
 	}
 }
