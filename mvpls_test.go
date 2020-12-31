@@ -1,56 +1,67 @@
 package main
 
 import (
+	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 )
 
 //REFACTOR: Move all test dirs to default temp directory
 func TestMoveFile(t *testing.T) {
-	createTestFile("testFile", t)
+	testDir := createTestDir()
+	defer os.RemoveAll(testDir)
 
-	MoveFile("testFile", "testFileMoved")
-	if _, err := os.Stat("testFileMoved"); err != nil && os.IsNotExist(err) {
+	oldFile := filepath.Join(testDir, "file11.png")
+	newFile := filepath.Join(testDir, "file11.new")
+	MoveFile(oldFile, newFile)
+	if _, err := os.Stat(newFile); err != nil && os.IsNotExist(err) {
 		t.Error("File Not Moved")
 	}
-	os.Remove("testFileMoved")
 
-	createTestFile("testDir/", t)
-
-	MoveFile("testDir", "testingDir")
-	if _, err := os.Stat("testingDir"); err != nil && os.IsNotExist(err) {
-		t.Error("Test directory not moved")
-	}
-
-	createTestFile("beforeDirMove", t)
-	MoveFile("beforeDirMove", "testingDir/")
-
-	if _, err := os.Stat("testingDir/beforeDirMove"); err != nil && os.IsNotExist(err) {
+	oldFile = filepath.Join(testDir, "level2/file22.png")
+	newFile = filepath.Join(testDir, "file22.png")
+	MoveFile(oldFile, newFile)
+	if _, err := os.Stat(newFile); err != nil && os.IsNotExist(err) {
 		t.Error("file not moved to directory")
 	}
 	os.Remove("testingDir/beforeDirMove")
 
-	createTestFile("fullMove", t)
-	MoveFile("fullMove", "testingDir/")
+	oldFile = filepath.Join(testDir, "file11.jpg")
+	newFile = filepath.Join(testDir, "level2/file11.png")
 
-	if _, err := os.Stat("testingDir/fullMove"); err != nil && os.IsNotExist(err) {
+	MoveFile(oldFile, newFile)
+	if _, err := os.Stat(newFile); err != nil && os.IsNotExist(err) {
 		t.Error("file not moved to directory")
 	}
 
-	os.Remove("testingDir/fullMove")
-	os.Remove("testingDir")
+	oldFile = filepath.Join(testDir, "level2")
+	newFile = filepath.Join(testDir, "level2.moved")
+
+	MoveFile(oldFile, newFile)
+	if _, err := os.Stat(newFile); err != nil && os.IsNotExist(err) {
+		t.Error("Test directory not moved")
+	}
 }
 
-func createTestFile(file string, t *testing.T) {
-	var err error
-	if file[len(file)-1] == '/' {
-		err = os.Mkdir(file[0:len(file)-1], 0777)
-	} else {
-		_, err = os.Create(file)
+func createTestDir() (testDir string) {
+	pdir := os.TempDir()
+	testDir, _ = ioutil.TempDir(pdir, "*-mvplsTest")
+
+	fmt.Println(testDir)
+	movedDir := filepath.Join(testDir, "moved")
+	os.Mkdir(movedDir, 0777)
+	testSubs := filepath.Join(testDir, "level2/level3/level4")
+	os.MkdirAll(testSubs, 0777)
+
+	subs := [...]string{"file11.jpg", "file11.png", "level2/file23.jpg", "level2/file21.png", "level2/file22.png", "level2/level3/file31.jpg", "level2/level3/file32.png"}
+	var sub string
+
+	for i := 0; i < len(subs); i++ {
+		sub = filepath.Join(testDir, subs[i])
+		os.Create(sub)
 	}
 
-	if err != nil {
-		t.Error("Error creating", file)
-	}
-
+	return
 }
