@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -25,19 +24,13 @@ func (s stack) Pop() (stack, string) {
 	return s[:l-1], s[l-1]
 }
 
-var regexFlag = flag.String("r", "regex", "The regex to be used to match files")
+var regexFlag = flag.String("r", "", "The regex to be used to match files")
 
 var s stack
 
 func main() {
 	s = make(stack, 0)
 	flag.Parse()
-	reg, comp_err := regexp.Compile(*regexFlag)
-
-	if comp_err != nil {
-		log.Fatal(comp_err)
-		return
-	}
 
 	tail := flag.Args()
 	target := tail[len(tail)-1]
@@ -49,11 +42,12 @@ func main() {
 		return
 	}
 
-	_, err := ioutil.ReadDir(".")
-	if err != nil {
-		log.Fatal(err)
-	}
+	reg, comp_err := regexp.Compile(*regexFlag)
 
+	if comp_err != nil {
+		log.Fatal(comp_err)
+		return
+	}
 	for i := 0; i < len(tail)-1; i++ {
 		ProbeDirectory(tail[i], target, reg)
 	}
@@ -73,14 +67,10 @@ func ProbeDirectory(dir, target string, reg *regexp.Regexp) {
 				if err != nil {
 					return err
 				}
-				fmt.Println(info.Name())
-
 				if path != dir {
 					if info.IsDir() {
-						fmt.Println(info.Name(), "added to stack")
 						s = s.Push(path)
 					} else if reg.MatchString(info.Name()) {
-						fmt.Println(info.Name(), "attempting move")
 						MoveFile(path, target)
 					}
 				}
@@ -99,23 +89,23 @@ func MoveFile(oldFile, newFile string) {
 	if oldFile == "" || newFile == "" {
 		return
 	}
-
 	oldFile, pathErr := filepath.Abs(oldFile)
 	if pathErr != nil {
 		log.Fatal(pathErr)
+		return
 	}
 
+	//oldInfo, _ := os.Stat(oldFile)
 	newFile, pathErr = filepath.Abs(newFile)
+	newInfo, statErr := os.Stat(newFile)
 
-	info, statErr := os.Stat(newFile)
-	fmt.Println(statErr)
-	if (statErr == nil || os.IsExist(statErr)) && info.IsDir() {
-		info, _ := os.Stat(oldFile)
-		newFile = path.Join(newFile, "/"+info.Name())
+	if (statErr == nil || os.IsExist(statErr)) && newInfo.IsDir() {
+		newInfo, _ := os.Stat(oldFile)
+		newFile = path.Join(newFile, newInfo.Name())
 	}
 
-	fmt.Println(oldFile)
-	fmt.Println(newFile)
+	fmt.Println(oldFile, "->", newFile)
+
 	err := os.Rename(oldFile, newFile)
 	if err != nil {
 		log.Fatal(err)
