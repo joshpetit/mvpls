@@ -5,6 +5,8 @@ Mvpls (move please) is a simple utility tool written in Go to allow for the recu
 
 In this example, every pdf file within my books directory and its subdirectories is moved to a seperate folder.
 
+Why are my pdfs executable? Idk calibre did that to them for some reason.
+
 it's still in development lol.
 
 You could say, can't we easily do this by piping a few [standard commands](https://superuser.com/a/1041895/1225558)?
