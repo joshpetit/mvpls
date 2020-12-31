@@ -33,10 +33,11 @@ func main() {
 	flag.Parse()
 
 	tail := flag.Args()
-	target := tail[len(tail)-1]
+	tailLen := len(tail) - 1
+	target := tail[tailLen]
 
 	if *regexFlag == "" {
-		for i := 0; i < len(tail)-1; i++ {
+		for i := 0; i < tailLen; i++ {
 			MoveFile(tail[i], target)
 		}
 		return
@@ -48,7 +49,7 @@ func main() {
 		log.Fatal(comp_err)
 		return
 	}
-	for i := 0; i < len(tail)-1; i++ {
+	for i := 0; i < tailLen; i++ {
 		ProbeDirectory(tail[i], target, reg)
 	}
 }

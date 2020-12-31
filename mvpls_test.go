@@ -49,7 +49,6 @@ func TestMoveFile(t *testing.T) {
 func TestProbeDirectory(t *testing.T) {
 	testDir := createTestDir()
 	target := filepath.Join(testDir, "moved")
-	fmt.Println(testDir)
 	movedDir := filepath.Join(testDir, "moved")
 	defer os.RemoveAll(testDir)
 
