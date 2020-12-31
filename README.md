@@ -12,10 +12,11 @@ it's still in development lol.
 You could say, can't we easily do this by piping a few [standard commands](https://superuser.com/a/1041895/1225558)?
 And you'd be right. But I wanted to make this anyway :P. Also Go is fun to code in so I can't be wrong there.
 
-It also works just like the POSIX `mv` command so can move files like regular when n flag is passed. Do I get a POSIX compliant badge??
+It also works just like the POSIX `mv` command so can move files like regular when no flag is passed. Do I get a POSIX compliant badge??
 
 ## Why GO?
-The correct question is why not Go? I mostly chose Go because it looks fun and is cross platform. My two largest desires for applications.
+The correct question is why not Go? I mostly chose Go because it looks fun and is cross platform. 
+The two most import parts in software development after the name.
 
 ### Pressing features
 - Key feature allowing you to thank mvpls if it succeeds.
