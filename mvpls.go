@@ -54,12 +54,28 @@ func main() {
 	}
 }
 
+func probeable(dir string) bool {
+	stat, err := os.Stat(dir)
+	if err != nil && os.IsNotExist(err) {
+		log.Fatal(fmt.Sprintf("Error: %s does not exist", dir))
+		return false
+	}
+	if !stat.IsDir() {
+		log.Fatal(fmt.Sprintf("Error: %s is not a directory", dir))
+		return false
+	}
+	return true
+}
+
 func ProbeDirectory(dir, target string, reg *regexp.Regexp) {
 	if dir == "" || target == "" {
 		return
 	}
 	dir, _ = filepath.Abs(dir)
 	target, _ = filepath.Abs(target)
+	if !probeable(dir) || !probeable(target) {
+		return
+	}
 	s = s.Push(dir)
 	for len(s) != 0 {
 		s, dir = s.Pop()
