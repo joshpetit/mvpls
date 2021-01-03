@@ -90,19 +90,32 @@ func MoveFile(oldFile, newFile string) {
 	if oldFile == "" || newFile == "" {
 		return
 	}
+	mvDir := os.IsPathSeparator(newFile[len(newFile)-1])
+
 	oldFile, pathErr := filepath.Abs(oldFile)
 	if pathErr != nil {
 		log.Fatal(pathErr)
 		return
 	}
 
-	//oldInfo, _ := os.Stat(oldFile)
+	oldInfo, statErr := os.Stat(oldFile)
+
+	if statErr != nil && os.IsNotExist(statErr) {
+		log.Fatal(statErr)
+		return
+	}
+
 	newFile, pathErr = filepath.Abs(newFile)
 	newInfo, statErr := os.Stat(newFile)
 
-	if (statErr == nil || os.IsExist(statErr)) && newInfo.IsDir() {
+	if statErr == nil && newInfo.IsDir() {
+
+		fmt.Println("ok")
 		newInfo, _ := os.Stat(oldFile)
 		newFile = path.Join(newFile, newInfo.Name())
+	} else if statErr != nil && mvDir && !oldInfo.IsDir() && os.IsNotExist(statErr) {
+		log.Fatal(statErr)
+		return
 	}
 
 	fmt.Println(oldFile, "->", newFile)
