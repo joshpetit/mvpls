@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -41,7 +42,7 @@ var version = "0.0.0"
 
 func main() {
 	flag.Parse()
-
+	CopyFile("file", "fileCopied")
 	tail := flag.Args()
 	tailLen := len(tail) - 1
 	if tailLen == -1 {
@@ -130,6 +131,35 @@ func ProbeDirectory(dir, target string, reg *regexp.Regexp) {
 
 }
 
+func CopyFile(oldFile, newFile string) {
+	oldFile, pathErr := filepath.Abs(oldFile)
+	if pathErr != nil {
+		log.Fatal(pathErr)
+	}
+
+	newFile, pathErr = filepath.Abs(newFile)
+	if pathErr != nil {
+		log.Fatal(pathErr)
+	}
+
+	from, err := os.Open(oldFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer from.Close()
+	stat, err := os.Lstat(oldFile)
+	to, err := os.OpenFile(newFile, os.O_RDWR|os.O_CREATE, stat.Mode().Perm())
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer to.Close()
+
+	_, err = io.Copy(to, from)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func MoveFile(oldFile, newFile string) {
 	if oldFile == "" || newFile == "" {
 		return
@@ -153,8 +183,6 @@ func MoveFile(oldFile, newFile string) {
 	newInfo, statErr := os.Stat(newFile)
 
 	if statErr == nil && newInfo.IsDir() {
-
-		fmt.Println("ok")
 		newInfo, _ := os.Stat(oldFile)
 		newFile = path.Join(newFile, newInfo.Name())
 	} else if statErr != nil && mvDir && !oldInfo.IsDir() && os.IsNotExist(statErr) {
