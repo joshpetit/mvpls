@@ -10,6 +10,14 @@ import (
 	"regexp"
 )
 
+type Operation int
+
+const (
+	Move   Operation = iota
+	Copy   Operation = iota
+	Remove Operation = iota
+)
+
 type stack []string
 
 func (s stack) Push(v string) stack {
@@ -25,16 +33,34 @@ func (s stack) Pop() (stack, string) {
 }
 
 var regexFlag = flag.String("r", "", "The regex to be used to match files")
+var copyFlag = flag.Bool("c", false, "Copy the requested files, please")
+var removeFlag = flag.Bool("remove", false, "Copy the requested files, please")
 
 var s stack
+var version = "0.0.0"
 
 func main() {
-	s = make(stack, 0)
 	flag.Parse()
 
 	tail := flag.Args()
 	tailLen := len(tail) - 1
+	if tailLen == -1 {
+		fmt.Printf("Mvpls!\nv%s\nRun mvpls --help to ask for help (please)\n", version)
+		return
+	}
 	target := tail[tailLen]
+
+	var op Operation
+	switch {
+	case *copyFlag:
+		op = Copy
+	case *removeFlag:
+		op = Remove
+	default:
+		op = Move
+	}
+
+	fmt.Println(op)
 
 	if *regexFlag == "" {
 		for i := 0; i < tailLen; i++ {
@@ -49,6 +75,8 @@ func main() {
 		log.Fatal(comp_err)
 		return
 	}
+
+	s = make(stack, 0)
 	for i := 0; i < tailLen; i++ {
 		ProbeDirectory(tail[i], target, reg)
 	}
@@ -135,7 +163,6 @@ func MoveFile(oldFile, newFile string) {
 	}
 
 	fmt.Println(oldFile, "->", newFile)
-
 	err := os.Rename(oldFile, newFile)
 	if err != nil {
 		log.Fatal(err)
