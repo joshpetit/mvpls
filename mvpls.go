@@ -1,4 +1,4 @@
-package main
+package mvpls
 
 import (
 	"flag"
@@ -42,7 +42,6 @@ var version = "0.0.0"
 
 func main() {
 	flag.Parse()
-	CopyFile("file", "fileCopied")
 	tail := flag.Args()
 	tailLen := len(tail) - 1
 	if tailLen == -1 {
@@ -60,8 +59,6 @@ func main() {
 	default:
 		op = Move
 	}
-
-	fmt.Println(op)
 
 	if *regexFlag == "" {
 		for i := 0; i < tailLen; i++ {
