@@ -1,4 +1,4 @@
-package mvpls
+package main
 
 import (
 	"fmt"

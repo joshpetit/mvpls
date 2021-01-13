@@ -1,4 +1,4 @@
-package mvpls
+package main
 
 import (
 	"flag"
@@ -59,10 +59,14 @@ func main() {
 	default:
 		op = Move
 	}
-
 	if *regexFlag == "" {
 		for i := 0; i < tailLen; i++ {
-			MoveFile(tail[i], target)
+			switch op {
+			case Copy:
+				CopyFile(tail[i], target)
+			default:
+				MoveFile(tail[i], target)
+			}
 		}
 		return
 	}
@@ -152,6 +156,7 @@ func CopyFile(oldFile, newFile string) {
 	defer to.Close()
 
 	_, err = io.Copy(to, from)
+	fmt.Println(oldFile, " -- copied -->", newFile)
 	if err != nil {
 		log.Fatal(err)
 	}
