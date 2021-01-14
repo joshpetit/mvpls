@@ -53,7 +53,7 @@ func TestProbeDirectory(t *testing.T) {
 	defer os.RemoveAll(testDir)
 
 	regex, _ := regexp.Compile(".*\\.png")
-	ProbeDirectory(testDir, target, regex)
+	ProbeDirectory(testDir, target, regex, MoveFile)
 
 	path := testDir
 	var full string

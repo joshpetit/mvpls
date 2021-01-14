@@ -19,6 +19,8 @@ const (
 	Remove
 )
 
+type FileOperation func(string, string)
+
 type stack []string
 
 func (s stack) Push(v string) stack {
@@ -49,15 +51,19 @@ func main() {
 		return
 	}
 	target := tail[tailLen]
-
+	var fileOperation FileOperation
 	var op Operation
+
 	switch {
 	case *copyFlag:
 		op = Copy
+		fileOperation = CopyFile
 	case *removeFlag:
 		op = Remove
+		fileOperation = MoveFile
 	default:
 		op = Move
+		fileOperation = MoveFile
 	}
 	if *regexFlag == "" {
 		for i := 0; i < tailLen; i++ {
@@ -80,7 +86,7 @@ func main() {
 
 	s = make(stack, 0)
 	for i := 0; i < tailLen; i++ {
-		ProbeDirectory(tail[i], target, reg)
+		ProbeDirectory(tail[i], target, reg, fileOperation)
 	}
 }
 
@@ -97,7 +103,7 @@ func probeable(dir string) bool {
 	return true
 }
 
-func ProbeDirectory(dir, target string, reg *regexp.Regexp) {
+func ProbeDirectory(dir, target string, reg *regexp.Regexp, operate FileOperation) {
 	if dir == "" || target == "" {
 		return
 	}
@@ -118,7 +124,7 @@ func ProbeDirectory(dir, target string, reg *regexp.Regexp) {
 					if info.IsDir() {
 						s = s.Push(path)
 					} else if reg.MatchString(info.Name()) {
-						MoveFile(path, target)
+						operate(path, target)
 					}
 				}
 
@@ -171,8 +177,8 @@ func CopyFile(oldFilePath, newFilePath string) {
 	if newFileErr != nil {
 		log.Fatal(newInfoErr)
 	}
-	defer newFile.Close()
 
+	defer newFile.Close()
 	_, newInfoErr = io.Copy(newFile, oldFile)
 	fmt.Println(oldFilePath, "-- copied -->", newFilePath)
 	if newInfoErr != nil {
