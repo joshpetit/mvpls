@@ -14,9 +14,9 @@ import (
 type Operation int
 
 const (
-	Move   Operation = iota
-	Copy   Operation = iota
-	Remove Operation = iota
+	Move Operation = iota
+	Copy
+	Remove
 )
 
 type stack []string
@@ -148,15 +148,22 @@ func CopyFile(oldFile, newFile string) {
 		log.Fatal(err)
 	}
 	defer from.Close()
-	stat, err := os.Lstat(oldFile)
-	to, err := os.OpenFile(newFile, os.O_RDWR|os.O_CREATE, stat.Mode().Perm())
-	if err != nil {
+	stat, _ := os.Stat(oldFile)
+	newInfo, err := os.Stat(newFile)
+
+	if err == nil && newInfo.IsDir() {
+		newInfo, _ := os.Stat(oldFile)
+		newFile = path.Join(newFile, newInfo.Name())
+	}
+
+	to, fileErr := os.OpenFile(newFile, os.O_RDWR|os.O_CREATE, stat.Mode().Perm())
+	if fileErr != nil {
 		log.Fatal(err)
 	}
 	defer to.Close()
 
 	_, err = io.Copy(to, from)
-	fmt.Println(oldFile, " -- copied -->", newFile)
+	fmt.Println(oldFile, "-- copied -->", newFile)
 	if err != nil {
 		log.Fatal(err)
 	}
