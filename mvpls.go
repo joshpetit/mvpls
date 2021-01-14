@@ -52,27 +52,20 @@ func main() {
 	}
 	target := tail[tailLen]
 	var fileOperation FileOperation
-	var op Operation
 
 	switch {
 	case *copyFlag:
-		op = Copy
 		fileOperation = CopyFile
 	case *removeFlag:
-		op = Remove
-		fileOperation = MoveFile
+		fileOperation = RemoveFile
+		tailLen++
 	default:
-		op = Move
 		fileOperation = MoveFile
+		target = ""
 	}
 	if *regexFlag == "" {
 		for i := 0; i < tailLen; i++ {
-			switch op {
-			case Copy:
-				CopyFile(tail[i], target)
-			default:
-				MoveFile(tail[i], target)
-			}
+			fileOperation(tail[i], target)
 		}
 		return
 	}
@@ -183,6 +176,31 @@ func CopyFile(oldFilePath, newFilePath string) {
 	fmt.Println(oldFilePath, "-- copied -->", newFilePath)
 	if newInfoErr != nil {
 		log.Fatal(newInfoErr)
+	}
+}
+
+func RemoveFile(oldFile, placeholderlol string) {
+	if oldFile == "" {
+		return
+	}
+
+	oldFile, pathErr := filepath.Abs(oldFile)
+	if pathErr != nil {
+		log.Fatal(pathErr)
+		return
+	}
+
+	_, statErr := os.Stat(oldFile)
+
+	if statErr != nil && os.IsNotExist(statErr) {
+		log.Fatal(statErr)
+		return
+	}
+
+	fmt.Println(oldFile, "-- removed --x")
+	err := os.Remove(oldFile)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
 
