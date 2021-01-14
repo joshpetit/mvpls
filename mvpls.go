@@ -132,40 +132,51 @@ func ProbeDirectory(dir, target string, reg *regexp.Regexp) {
 
 }
 
-func CopyFile(oldFile, newFile string) {
-	oldFile, pathErr := filepath.Abs(oldFile)
-	if pathErr != nil {
-		log.Fatal(pathErr)
+func CopyFile(oldFilePath, newFilePath string) {
+	oldFilePath, oldPathErr := filepath.Abs(oldFilePath)
+	if oldPathErr != nil {
+		log.Fatal(oldPathErr)
 	}
 
-	newFile, pathErr = filepath.Abs(newFile)
-	if pathErr != nil {
-		log.Fatal(pathErr)
+	newFilePath, newPathErr := filepath.Abs(newFilePath)
+	if newPathErr != nil {
+		log.Fatal(newPathErr)
 	}
 
-	from, err := os.Open(oldFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer from.Close()
-	stat, _ := os.Stat(oldFile)
-	newInfo, err := os.Stat(newFile)
-
-	if err == nil && newInfo.IsDir() {
-		newInfo, _ := os.Stat(oldFile)
-		newFile = path.Join(newFile, newInfo.Name())
+	oldFile, newInfoErr := os.Open(oldFilePath)
+	if newInfoErr != nil {
+		log.Fatal(newInfoErr)
 	}
 
-	to, fileErr := os.OpenFile(newFile, os.O_RDWR|os.O_CREATE, stat.Mode().Perm())
-	if fileErr != nil {
-		log.Fatal(err)
+	defer oldFile.Close()
+	oldFileInfo, oldInfoErr := os.Stat(oldFilePath)
+	if oldFileInfo.IsDir() {
+		log.Fatal("Copying entire directories is not currently supported :(")
+		return
 	}
-	defer to.Close()
 
-	_, err = io.Copy(to, from)
-	fmt.Println(oldFile, "-- copied -->", newFile)
-	if err != nil {
-		log.Fatal(err)
+	if oldInfoErr != nil {
+		log.Fatal(oldInfoErr)
+		return
+	}
+
+	newFileInfo, newInfoErr := os.Stat(newFilePath)
+
+	if newInfoErr == nil && newFileInfo.IsDir() {
+		newInfo, _ := os.Stat(oldFilePath)
+		newFilePath = path.Join(newFilePath, newInfo.Name())
+	}
+
+	newFile, newFileErr := os.OpenFile(newFilePath, os.O_RDWR|os.O_CREATE, oldFileInfo.Mode().Perm())
+	if newFileErr != nil {
+		log.Fatal(newInfoErr)
+	}
+	defer newFile.Close()
+
+	_, newInfoErr = io.Copy(newFile, oldFile)
+	fmt.Println(oldFilePath, "-- copied -->", newFilePath)
+	if newInfoErr != nil {
+		log.Fatal(newInfoErr)
 	}
 }
 
