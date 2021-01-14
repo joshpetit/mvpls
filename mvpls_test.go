@@ -21,12 +21,21 @@ func TestMoveFile(t *testing.T) {
 		t.Error("File Not Moved")
 	}
 
+	if _, err := os.Stat(oldFile); err == nil && os.IsExist(err) {
+		t.Error("Old file location still present")
+	}
+
 	oldFile = filepath.Join(testDir, "level2/file22.png")
 	newFile = filepath.Join(testDir, "file22.png")
 	MoveFile(oldFile, newFile)
 	if _, err := os.Stat(newFile); err != nil && os.IsNotExist(err) {
 		t.Error("file not moved to directory")
 	}
+
+	if _, err := os.Stat(oldFile); err == nil && os.IsExist(err) {
+		t.Error("Old file location still present")
+	}
+
 	os.Remove("testingDir/beforeDirMove")
 
 	oldFile = filepath.Join(testDir, "file11.jpg")
@@ -43,6 +52,51 @@ func TestMoveFile(t *testing.T) {
 	MoveFile(oldFile, newFile)
 	if _, err := os.Stat(newFile); err != nil && os.IsNotExist(err) {
 		t.Error("Test directory not moved")
+	}
+
+	if _, err := os.Stat(oldFile); err == nil && os.IsExist(err) {
+		t.Error("Old test directory still present")
+	}
+}
+
+func TestCopyFile(t *testing.T) {
+	testDir := createTestDir()
+	defer os.RemoveAll(testDir)
+
+	oldFile := filepath.Join(testDir, "file11.png")
+	newFile := filepath.Join(testDir, "file11.new")
+	CopyFile(oldFile, newFile)
+	if _, err := os.Stat(newFile); err != nil && os.IsNotExist(err) {
+		t.Error("File Not Copied")
+	}
+
+	if _, err := os.Stat(oldFile); err == nil && os.IsExist(err) {
+		t.Error("File original location not present")
+	}
+
+	oldFile = filepath.Join(testDir, "level2/file22.png")
+	newFile = filepath.Join(testDir, "file22.png")
+	CopyFile(oldFile, newFile)
+	if _, err := os.Stat(newFile); err != nil && os.IsNotExist(err) {
+		t.Error("file not copied to directory")
+	}
+
+	if _, err := os.Stat(oldFile); err == nil && os.IsExist(err) {
+		t.Error("Original file not present")
+	}
+
+	os.Remove("testingDir/beforeDirMove")
+
+	oldFile = filepath.Join(testDir, "file11.jpg")
+	newFile = filepath.Join(testDir, "level2/file11.png")
+
+	CopyFile(oldFile, newFile)
+	if _, err := os.Stat(newFile); err != nil && os.IsNotExist(err) {
+		t.Error("file not copied to directory")
+	}
+
+	if _, err := os.Stat(oldFile); err == nil && os.IsExist(err) {
+		t.Error("Original file not present")
 	}
 }
 
