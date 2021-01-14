@@ -157,7 +157,7 @@ func CopyFile(oldFilePath, newFilePath string) {
 	defer oldFile.Close()
 	oldFileInfo, oldInfoErr := os.Stat(oldFilePath)
 	if oldFileInfo.IsDir() {
-		log.Fatal("Copying entire directories is not currently supported :(")
+		log.Fatal("Copying directories directly (alliteration haha) is not currently supported :(")
 		return
 	}
 
