@@ -9,7 +9,6 @@ import (
 	"testing"
 )
 
-//REFACTOR: Move all test dirs to default temp directory
 func TestMoveFile(t *testing.T) {
 	testDir := createTestDir()
 	defer os.RemoveAll(testDir)
@@ -56,6 +55,23 @@ func TestMoveFile(t *testing.T) {
 
 	if _, err := os.Stat(oldFile); err == nil && os.IsExist(err) {
 		t.Error("Old test directory still present")
+	}
+}
+
+func TestRemoveFile(t *testing.T) {
+	testDir := createTestDir()
+	defer os.RemoveAll(testDir)
+
+	oldFile := filepath.Join(testDir, "file11.png")
+	RemoveFile(oldFile, "")
+	if _, err := os.Stat(oldFile); err != nil && os.IsExist(err) {
+		t.Error("File Not Removed")
+	}
+
+	oldFile = filepath.Join(testDir, "level2/file22.png")
+	RemoveFile(oldFile, "")
+	if _, err := os.Stat(oldFile); err != nil && os.IsExist(err) {
+		t.Error("file within directory not removed")
 	}
 }
 
