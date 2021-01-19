@@ -13,6 +13,8 @@ mvpls -r ".*\.png" . moveLocation/
 ```
 moves all pngs extensions from the current directory and its subdirectories to the folder `moveLocation`.
 
+to copy, pass in the -c flag, remove pass in the --remove flag.
+
 it's still in development lol. Try at your own risk I suppose. Should work though... spent a few hours on it...
 
 You could say, can't we easily do this by piping a few [standard commands](https://superuser.com/a/1041895/1225558)?
